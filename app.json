@@ -3,8 +3,8 @@
     "name": "APP",
     "slug": "APP",
     "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "orientation": "default",
+    "icon": "./assets/spc.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
