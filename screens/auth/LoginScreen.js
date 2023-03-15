@@ -18,7 +18,7 @@ import {
   Button,
 } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
-// console.log(AppLoading)
+
 SplashScreen.preventAutoHideAsync();
 
 export default function LoginScreen({ navigation }) {
@@ -81,7 +81,8 @@ export default function LoginScreen({ navigation }) {
                  style={styles.ico}
                />} */}
               <View>
-                <Text style={styles.inputTitle}>Email</Text>
+                
+                <Text style={styles.inputTitle}> Email</Text>
                 <TextInput //! Email Input
                   autoCapitalize={"none"}
                   onFocus={() => setIsShownKeyboard(true)}
@@ -97,6 +98,7 @@ export default function LoginScreen({ navigation }) {
                 />
               </View>
               <View style={{ marginTop: 10, marginBottom: 25 }}>
+                
                 <Text style={styles.inputTitle}>Password</Text>
                 <TextInput //! Password input
                   onFocus={() => setIsShownKeyboard(true)}
@@ -129,8 +131,14 @@ export default function LoginScreen({ navigation }) {
                     fontSize: 12,
                     marginTop: 15,
                     fontFamily: "Cagliostro",
-                  }}>First time here? <Text style={{ textDecorationLine: "underline"  }}> Sign up! 
-                  </Text> </Text>
+                  }}
+                >
+                  First time here?{" "}
+                  <Text style={{ textDecorationLine: "underline" }}>
+                    {" "}
+                    Sign up!
+                  </Text>{" "}
+                </Text>
               </TouchableOpacity>
             </View>
           </KeyboardAvoidingView>

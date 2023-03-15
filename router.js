@@ -1,14 +1,16 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+//! Screens
 import LoginScreen from "./screens/auth/LoginScreen";
 import RegisterScreen from "./screens/auth/RegisterScreen";
 import CreateScreen from "./screens/MainScreen/CreateScreen";
 import PostScreen from "./screens/MainScreen/PostScreen";
 import ProfileScreen from "./screens/MainScreen/ProfileScreen";
 import ContactsScreen from "./screens/MainScreen/ContactsScreen";
-import {
-  MaterialCommunityIcons,
+//! icons
+import {   
+    Entypo ,
   Feather,
   Ionicons,
   AntDesign,
@@ -35,14 +37,25 @@ const useRoute = (isLogin) => {
     );
   }
   return (
-    <MainTab.Navigator>
+    <MainTab.Navigator
+      screenOptions={{
+        tabBarStyle: { backgroundColor: "#fff" },
+        tabBarActiveTintColor: "#007AFF",
+        tabBarInactiveTintColor: "#8E8E93",
+        tabBarLabelStyle: { fontSize: 10, fontWeight: "bold" },
+        tabBarIconStyle: { marginBottom: -9 },
+        tabBarShowLabel: false,
+        // tabBarIndicatorStyle: { backgroundColor: "#007AFF", height: 4 },
+      }}
+    >
       <MainTab.Screen
         name="Posts"
         component={PostScreen}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="post" size={size} color={color} />
+            <Entypo name="news" size={25} color={color} />
           ),
+          headerShown: false,
         }}
       />
       <MainTab.Screen
@@ -50,8 +63,9 @@ const useRoute = (isLogin) => {
         component={CreateScreen}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="ios-create-outline" size={size} color={color} />
+            <Ionicons name="ios-create-outline" size={25} color={color} />
           ),
+          headerShown: false,
         }}
       />
       <MainTab.Screen
@@ -59,8 +73,9 @@ const useRoute = (isLogin) => {
         component={ProfileScreen}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <Feather name="user" size={size} color={color} />
+            <Feather name="user" size={25} color={color} />
           ),
+          headerShown: false,
         }}
       />
       <MainTab.Screen
@@ -68,11 +83,13 @@ const useRoute = (isLogin) => {
         component={ContactsScreen}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <AntDesign name="contacts" size={size} color={color} />
+            <AntDesign name="contacts" size={25} color={color} />
           ),
+            headerShown: false,
+          
         }}
       />
     </MainTab.Navigator>
   );
 };
-export default useRoute
+export default useRoute;
