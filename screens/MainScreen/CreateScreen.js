@@ -47,6 +47,8 @@ const CreateScreen = ({ navigation }) => {
   }
 
   const takePhoto = async () => {
+    const location = await Location.getCurrentPositionAsync({});
+    setLocation(location);
     const photo = await cameraRef.current.takePictureAsync();
     setPhotoCard(photo.uri);
     console.log("photo :>> ", photo.uri);
@@ -65,7 +67,7 @@ const CreateScreen = ({ navigation }) => {
 
   function publish() {
     console.log("PUBLISHED");
-    navigation.navigate("Posts", { photoCard });
+    navigation.navigate("FirstScreen", { photoCard });
     setPhotoCard(null);
     setStartCamera(null)
   }
