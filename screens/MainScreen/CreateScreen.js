@@ -1,42 +1,44 @@
 import React from "react";
 import * as Location from "expo-location";
 import { useState, useEffect, useRef } from "react";
-import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  Text,
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  Image,
+} from "react-native";
 import { Camera, CameraType } from "expo-camera";
 import { MaterialIcons, Ionicons, Entypo } from "@expo/vector-icons";
 
-const CreateScreen = () => {
+const CreateScreen = ({ navigation }) => {
+  const [photoCard, setPhotoCard] = useState(null);
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
   const [startCamera, setStartCamera] = useState(null);
   const [type, setType] = useState(CameraType.back);
   const [permission, requestPermission] = Camera.useCameraPermissions();
 
- const cameraRef = useRef();
- useEffect(() => {
-   (async () => {
-     const { status } = await Location.requestForegroundPermissionsAsync();
-     if (status !== "granted") {
-       setErrorMsg("Permission to access location was denied");
-       return;
-     }
-     const location = await Location.getCurrentPositionAsync({});
-     setLocation(location);
-     
-   })();
-   const getPermissions = async () => {
-     const { status } = await Camera.requestPermissionsAsync();
-     if (status === "granted") {
-       // start the camera
-       setStartCamera(true);
-     } else {
-       Alert.alert("Access denied");
-     }
-   };
-   if (startCamera === null) {
-     getPermissions();
-   }
- }, [startCamera]);
+  const cameraRef = useRef(null);
+  // console.log(cameraRef)
+  useEffect(() => {
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setErrorMsg("Permission to access location was denied");
+        return;
+      }
+      const location = await Location.getCurrentPositionAsync({});
+      setLocation(location);
+    })();
+  }, []);
+  let text = "Waiting..";
+  if (errorMsg) {
+    text = errorMsg;
+  } else if (location) {
+    text = JSON.stringify(location);
+  }
   function toggleCameraType() {
     console.log("FLIP");
     setType((current) =>
@@ -44,59 +46,110 @@ const CreateScreen = () => {
     );
   }
 
-  const snap = async () => {
+  const takePhoto = async () => {
     const photo = await cameraRef.current.takePictureAsync();
-    console.log("photo :>> ", photo);
+    setPhotoCard(photo.uri);
+    console.log("photo :>> ", photo.uri);
+    console.log("latitude >", location.coords.latitude);
+    console.log("altitude >", location.coords.altitude);
   };
 
-const _startCamera = async () => {
-  const { status } = await Camera.requestPermissionsAsync();
-  if (status === "granted") {
-    // start the camera
-    setStartCamera(true);
-  } else {
-    Alert.alert("Access denied");
-  }
-};
-
+  const _startCamera = async () => {
+    const { status } = await Camera.requestCameraPermissionsAsync();
+    if (status === "granted") {
+      setStartCamera(true);
+    } else {
+      Alert.alert("Access denied!");
+    }
+  };
 
   function publish() {
     console.log("PUBLISHED");
+    navigation.navigate("Posts", { photoCard });
+    setPhotoCard(null);
+    setStartCamera(null)
   }
+
   return (
     <View style={styles.container}>
-      {/* <Text> CreateScreen FUCK YOU NIGER</Text> */}
-      <Camera
-        style={styles.camera}
-        type={type}
-        autoFocus={Camera.Constants.AutoFocus.on}
-        flashMode={Camera.Constants.FlashMode.off}
-        zoom={0}
-        ref={cameraRef}
-      >
-        {/* <View >  */}
-        <View>
-          <TouchableOpacity style={styles.snap} onPress={snap}>
-            <Ionicons name="md-camera-outline" size={40} color="white" />
-          </TouchableOpacity>
-          {/* </View>
+      {startCamera ? (
+        <>
+          <Camera
+            style={[styles.camera, { aspectRatio: 9 / 16 }]}
+            type={type}
+            autoFocus={Camera.Constants.AutoFocus.on}
+            flashMode={Camera.Constants.FlashMode.off}
+            zoom={0}
+            ref={cameraRef}
+          >
+            <View>
+              {photoCard && (
+                <View style={styles.takePhotoContainer}>
+                  <Image
+                    source={{ uri: photoCard }}
+                    style={{ height: 200, width: 200, borderRadius: 10 }}
+                  />
+                </View>
+              )}
+              <TouchableOpacity style={styles.takePhotoBtn} onPress={takePhoto}>
+                <Ionicons
+                  name="md-camera-outline"
+                  size={40}
+                  color="transparent"
+                />
+              </TouchableOpacity>
 
-          <View> */}
-          <TouchableOpacity style={styles.flip} onPress={toggleCameraType}>
-            <MaterialIcons name="flip-camera-ios" size={40} color="white" />
+              <TouchableOpacity
+                style={styles.flipBtn}
+                onPress={toggleCameraType}
+              >
+                <MaterialIcons name="flip-camera-ios" size={40} color="white" />
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.publishBtn}>
+                <MaterialIcons
+                  name="publish"
+                  size={40}
+                  color="white"
+                  onPress={publish}
+                />
+              </TouchableOpacity>
+            </View>
+          </Camera>
+        </>
+      ) : (
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "azure",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <TouchableOpacity
+            onPress={_startCamera}
+            style={{
+              width: 130,
+              borderRadius: 4,
+              backgroundColor: "#14274e",
+              flexDirection: "row",
+              justifyContent: "center",
+              alignItems: "center",
+              height: 40,
+            }}
+          >
+            <Text
+              style={{
+                color: "#fff",
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+            >
+              Take picture
+            </Text>
           </TouchableOpacity>
         </View>
-        {/* </View> */}
-      </Camera>
-      <TouchableOpacity>
-        <Entypo
-          name="publish"
-          size={60}
-          color="black"
-          onPress={publish}
-          style={{ marginTop: 50 }}
-        />
-      </TouchableOpacity>
+      )}
     </View>
   );
 };
@@ -107,26 +160,49 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   camera: {
-    width: 350,
+    flex: 1,
     marginTop: 50,
-    height: 500,
+
     flexDirection: "row",
   },
-  snap: {
-    marginLeft: 165, // Изменяем отступ
+  takePhotoBtn: {
+    width: 50,
+    borderWidth: 4,
+    borderRadius: 25,
+    borderColor: "white",
+    marginLeft: 150,
+    marginTop: 550,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 450,
   },
 
-  flip: {
-    // borderWidth: 1,
-    // color: "white",
+  flipBtn: {
+    borderColor: "white",
+
     width: 50,
+
     marginTop: -43,
-    marginLeft: 20,
+    marginLeft: 10,
+
     alignItems: "center",
     justifyContent: "center",
+  },
+  publishBtn: {
+    width: 50,
+    marginTop: -43,
+    marginLeft: 280,
+
+    borderColor: "white",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  takePhotoContainer: {
+    position: "absolute",
+    left: 15,
+    top: 15,
+    borderColor: "white",
+    borderWidth: 1,
+    borderRadius: 10,
   },
 });
 
