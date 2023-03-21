@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { StatusBar } from "expo-status-bar";
 import {
   StyleSheet,
@@ -14,11 +15,13 @@ import {
   TouchableWithoutFeedback,
 
 } from "react-native";
+ import { getAuth, createUserWithEmailAndPassword} from "firebase/auth";
 import * as SplashScreen from "expo-splash-screen";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RegisterScreen({ navigation }) {
+  
   const [state, setState] = useState({
     name: "",
     email: "",
