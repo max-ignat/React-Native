@@ -1,22 +1,77 @@
-import { async } from "@firebase/util";
-import { createAsyncThunk } from "@reduxjs/toolkit";
-import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
-import db from '../../firebase/config'
-// const auth = getAuth(app);
 
-// export const signup = () => async (dispatch, getState) => { };
-// export const signin = () => async (dispatch, getState) => { };
-// export const logout = () => async (dispatch, getState) => { };
-export const signup = createAsyncThunk(
-  "auth/signup",
-  async (data, thunkAPI) => {
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile,
+  onAuthStateChanged,
+  signOut,
+} from "firebase/auth";
+import { app } from "../../firebase/config.js";
+import { authSlice } from "./authReducer.js";
+
+const auth = getAuth(app);
+
+export const authSignUp =
+  ({ name, email, password }) =>
+  async (dispatch, getState) => {
     try {
-      const result = await db.auth().createUserWithEmailAndPassword() ;
-        console.log(data);
-        console.log(result);
-      return result;
+      const { user } =await createUserWithEmailAndPassword(auth, email, password);
+
+      await updateProfile(user, { displayName: name });
+
+      console.log('USER', user);
+
+      const { displayName, uid } = user;
+
+      dispatch(
+        authSlice.actions.updateUserProfile({ userId: uid, name: displayName })
+      )
+        
     } catch (error) {
-      return thunkAPI.rejectWithValue(error.message);
+      console.log("error.message", error.message);
     }
-  }
-);
+  };
+export const authSignIn =
+  ({ email, password }) =>
+  async (dispatch, getState) => {
+    try {
+      const user = await signInWithEmailAndPassword(auth, email, password);
+      // console.log("user", user);
+    } catch (error) {
+      
+      console.log("error.message", error.message);
+    }
+  };
+export const authSignOut = () => async (dispatch, getState) => {
+  await signOut(auth);
+  dispatch(authSlice.actions.authSignOut());
+};
+
+export const authStateChange = () => async (dispatch, getState) => {
+  await onAuthStateChanged(auth, (user) => {
+    if (user) {
+      dispatch(
+        authSlice.actions.updateUserProfile({
+          userId: user.uid,
+          name: user.displayName,
+        })
+      );
+
+      dispatch(
+        authSlice.actions.authStateChange({
+          stateChange: true,
+        })
+      );
+    } else {
+      dispatch(
+        authSlice.actions.authStateChange({
+          stateChange: false,
+        })
+      );
+    }
+  });
+};
+
+

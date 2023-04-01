@@ -13,28 +13,30 @@ import {
   Image,
   Keyboard,
   TouchableWithoutFeedback,
-
 } from "react-native";
- import { getAuth, createUserWithEmailAndPassword} from "firebase/auth";
+import { authSignUp } from "../../redux/auth/authOperations";
 import * as SplashScreen from "expo-splash-screen";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RegisterScreen({ navigation }) {
-  
+  const dispatch = useDispatch();
+
   const [state, setState] = useState({
     name: "",
     email: "",
     password: "",
   });
+  const [isRegistered, setRegister] = useState(false);
   const [isShownKeyboard, setIsShownKeyboard] = useState(false);
   const [isReady, setIsReady] = useState(false);
 
   const keyboardHide = () => {
     Keyboard.dismiss();
-    console.log(state);
+
+    dispatch(authSignUp(state));
+    setRegister(true);
     setState("");
-    // setIsShownKeyboard = false;
   };
   const { email, password, name } = state;
 
@@ -142,7 +144,12 @@ export default function RegisterScreen({ navigation }) {
                     fontSize: 12,
                     marginTop: 15,
                     fontFamily: "Cagliostro",
-                  }}>Already register? <Text style={{ textDecorationLine: "underline" }}>Sign in</Text>
+                  }}
+                >
+                  Already register?{" "}
+                  <Text style={{ textDecorationLine: "underline" }}>
+                    Sign in
+                  </Text>
                 </Text>
               </TouchableOpacity>
             </View>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-
+import { useDispatch } from "react-redux";
 import { StatusBar } from "expo-status-bar";
 import {
   StyleSheet,
@@ -18,11 +18,12 @@ import {
   Button,
 } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
+import { authSignIn } from "../../redux/auth/authOperations";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function LoginScreen({ navigation }) {
-  
+  dispatch = useDispatch();
 
   const [state, setState] = useState({
     email: "",
@@ -39,16 +40,13 @@ export default function LoginScreen({ navigation }) {
     Dimensions.addEventListener("change", onChange);
   }, []);
 
-  // const handleChange = ({ target }) => {
-  //   const { name, value } = target;
-  //   setState((prevState) => {
-  //     return { ...prevState, [name]: value };
-  //   });
-  // };
 
   const keyboardHide = () => {
     Keyboard.dismiss();
-    console.log(state);
+
+    // console.log("submit",state);
+    dispatch(authSignIn(state));
+
     setState("");
     // setIsShownKeyboard = false;
   };

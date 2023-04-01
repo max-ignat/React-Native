@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
@@ -8,26 +8,30 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
 } from "react-native";
-
+// import { db } from "./firebase/config";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
-
+import { isLogin } from "./redux/auth/authSelectors";
+import { useSelector } from "react-redux";
 import useRoute from "./router";
 SplashScreen.preventAutoHideAsync();
+import { app } from "./firebase/config";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 export default function App({}) {
+  const [user, setUser] = useState(null);
   const [fontsLoaded] = useFonts({
     Cagliostro: require("./assets/fonts/Cagliostro.ttf"),
     "Overpass-Bold": require("./assets/fonts/Overpass-Bold.ttf"),
     "Overpass-Regular": require("./assets/fonts/Overpass-Regular.ttf"),
   });
-  const route = useRoute(false);
-  // const handleChange = ({ target }) => {
-  //   const { name, value } = target;
-  //   setState((prevState) => {
-  //     return { ...prevState, [name]: value };
-  //   });
-  // };
+  const auth = getAuth(app);
+
+  onAuthStateChanged(auth, (user) => {
+    // console.log("ENtry", user.uid);
+    setUser(user);
+  });
+  const route = useRoute(user);
 
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
