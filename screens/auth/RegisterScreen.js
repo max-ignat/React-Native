@@ -16,7 +16,7 @@ import {
 } from "react-native";
 import { authSignUp } from "../../redux/auth/authOperations";
 import * as SplashScreen from "expo-splash-screen";
-
+import FlashMessage, { showMessage } from "react-native-flash-message";
 SplashScreen.preventAutoHideAsync();
 
 export default function RegisterScreen({ navigation }) {
@@ -64,10 +64,6 @@ export default function RegisterScreen({ navigation }) {
                 source={require("../../assets/favicon.png")}
                 style={styles.ico}
               />
-              {/* { (!isShownKeyboard) &&  <Image
-                 source={require("./assets/favicon.png")}
-                 style={styles.ico}
-               />} */}
 
               <Text
                 style={{
@@ -85,7 +81,6 @@ export default function RegisterScreen({ navigation }) {
                   autoCapitalize={"none"}
                   onFocus={() => setIsShownKeyboard(true)}
                   autoComplete={"off"}
-                  // placeholder="example-email@com"
                   style={styles.input}
                   textAlign={"center"}
                   value={name}

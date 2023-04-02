@@ -1,5 +1,5 @@
 
-import { createAsyncThunk } from "@reduxjs/toolkit";
+// import { createAsyncThunk } from "@reduxjs/toolkit";
 import {
   getAuth,
   createUserWithEmailAndPassword,
@@ -39,19 +39,27 @@ export const authSignIn =
     try {
       const user = await signInWithEmailAndPassword(auth, email, password);
       // console.log("user", user);
+     
     } catch (error) {
       
       console.log("error.message", error.message);
+
     }
   };
 export const authSignOut = () => async (dispatch, getState) => {
   await signOut(auth);
   dispatch(authSlice.actions.authSignOut());
+
 };
 
 export const authStateChange = () => async (dispatch, getState) => {
   await onAuthStateChanged(auth, (user) => {
     if (user) {
+      dispatch(
+        authSlice.actions.authStateChange({
+          stateChange: true,
+        })
+      );
       dispatch(
         authSlice.actions.updateUserProfile({
           userId: user.uid,
@@ -59,18 +67,8 @@ export const authStateChange = () => async (dispatch, getState) => {
         })
       );
 
-      dispatch(
-        authSlice.actions.authStateChange({
-          stateChange: true,
-        })
-      );
-    } else {
-      dispatch(
-        authSlice.actions.authStateChange({
-          stateChange: false,
-        })
-      );
-    }
+      
+    } 
   });
 };
 

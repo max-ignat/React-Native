@@ -19,7 +19,7 @@ import {
 } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
 import { authSignIn } from "../../redux/auth/authOperations";
-
+import FlashMessage, { showMessage } from "react-native-flash-message";
 SplashScreen.preventAutoHideAsync();
 
 export default function LoginScreen({ navigation }) {
@@ -44,11 +44,9 @@ export default function LoginScreen({ navigation }) {
   const keyboardHide = () => {
     Keyboard.dismiss();
 
-    // console.log("submit",state);
     dispatch(authSignIn(state));
-
     setState("");
-    // setIsShownKeyboard = false;
+
   };
   const { email, password } = state;
 
