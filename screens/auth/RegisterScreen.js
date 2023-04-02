@@ -16,7 +16,7 @@ import {
 } from "react-native";
 import { authSignUp } from "../../redux/auth/authOperations";
 import * as SplashScreen from "expo-splash-screen";
-import FlashMessage, { showMessage } from "react-native-flash-message";
+
 SplashScreen.preventAutoHideAsync();
 
 export default function RegisterScreen({ navigation }) {

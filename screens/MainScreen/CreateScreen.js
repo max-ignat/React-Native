@@ -11,17 +11,27 @@ import {
 } from "react-native";
 import { Camera, CameraType } from "expo-camera";
 import { MaterialIcons, Ionicons, Entypo } from "@expo/vector-icons";
+import { app , db, storage } from '../../firebase/config'
+import {
+  getDownloadURL,
+  ref,
+  uploadBytesResumable,
+  uploadBytes,
+} from "firebase/storage";
+
+
 
 const CreateScreen = ({ navigation }) => {
   const [photoCard, setPhotoCard] = useState(null);
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
+  const [photoURL, setPhotoURL] = useState(null);
   const [startCamera, setStartCamera] = useState(null);
   const [type, setType] = useState(CameraType.back);
   const [permission, requestPermission] = Camera.useCameraPermissions();
 
   const cameraRef = useRef(null);
-  // console.log(cameraRef)
+
   useEffect(() => {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -52,8 +62,8 @@ const CreateScreen = ({ navigation }) => {
     const photo = await cameraRef.current.takePictureAsync();
     setPhotoCard(photo.uri);
     console.log("photo :>> ", photo.uri);
-    console.log("latitude >", location.coords.latitude);
-    console.log("altitude >", location.coords.altitude);
+    // console.log("latitude >", location.coords.latitude);
+    // console.log("altitude >", location.coords.altitude);
   };
 
   const _startCamera = async () => {
@@ -67,10 +77,41 @@ const CreateScreen = ({ navigation }) => {
 
   function publish() {
     console.log("PUBLISHED");
+    uploadPhotoToServer(console.log("done"));
     navigation.navigate("FirstScreen", { photoCard });
     setPhotoCard(null);
     setStartCamera(null)
   }
+   const uploadPhotoToServer = async () => {
+     if (!photoCard) return;
+
+     try {
+       // setLoading(true);
+       const response = await fetch(photoCard);
+       const blobFile = await response.blob();
+       const id = Date.now();
+
+       const reference = ref(storage, `images/${id}`);
+       const result = await uploadBytesResumable(reference, blobFile);
+      //  console.log("RESULTTTTT", result)
+
+     } catch (err) {
+       // setLoading(false);
+       console.log(err.message);
+       Alert.alert("Try again \n", err.message);
+     }
+   };
+// const uploadPostToServer = async () => {
+//   await uploadPhotoToServer();
+//   const createPost = await addDoc(collection(db, "posts"), {
+//     photoURL,
+//     location,
+//     comment,
+//     locationName,
+//     userId,
+//     nickName,
+//   });
+// };
 
   return (
     <View style={styles.container}>
