@@ -93,7 +93,7 @@ const CreateScreen = ({ navigation }) => {
 
        const reference = ref(storage, `images/${id}`);
        const result = await uploadBytesResumable(reference, blobFile);
-      //  console.log("RESULTTTTT", result)
+       console.log("RESULTTTTT", result.metadata)
 
      } catch (err) {
        // setLoading(false);
