@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Alert,
   Image,
+  TextInput,
 } from "react-native";
 import { Camera, CameraType } from "expo-camera";
 import { MaterialIcons, Ionicons, Entypo } from "@expo/vector-icons";
@@ -18,7 +19,8 @@ import {
   uploadBytesResumable,
   uploadBytes,
 } from "firebase/storage";
-
+import { collection, addDoc } from "firebase/firestore";
+import { useSelector } from "react-redux";
 
 
 const CreateScreen = ({ navigation }) => {
@@ -26,9 +28,12 @@ const CreateScreen = ({ navigation }) => {
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
   const [photoURL, setPhotoURL] = useState(null);
+  const [message, setMessage] = useState('');
   const [startCamera, setStartCamera] = useState(null);
   const [type, setType] = useState(CameraType.back);
   const [permission, requestPermission] = Camera.useCameraPermissions();
+const { userId, name } = useSelector((state) => state.auth);
+
 
   const cameraRef = useRef(null);
 
@@ -56,15 +61,7 @@ const CreateScreen = ({ navigation }) => {
     );
   }
 
-  const takePhoto = async () => {
-    const location = await Location.getCurrentPositionAsync({});
-    setLocation(location);
-    const photo = await cameraRef.current.takePictureAsync();
-    setPhotoCard(photo.uri);
-    console.log("photo :>> ", photo.uri);
-    // console.log("latitude >", location.coords.latitude);
-    // console.log("altitude >", location.coords.altitude);
-  };
+
 
   const _startCamera = async () => {
     const { status } = await Camera.requestCameraPermissionsAsync();
@@ -74,10 +71,20 @@ const CreateScreen = ({ navigation }) => {
       Alert.alert("Access denied!");
     }
   };
-
+  const takePhoto = async () => {
+    const location = await Location.getCurrentPositionAsync({});
+    setLocation(location);
+    const photo = await cameraRef.current.takePictureAsync();
+    setPhotoCard(photo.uri);
+    console.log("LOCATION ==>", location)
+    console.log("photo ==> ", photo.uri);
+    console.log("message ==>", message);
+    // console.log("latitude >", location.coords.latitude);
+    // console.log("altitude >", location.coords.altitude);
+  };
   function publish() {
-    console.log("PUBLISHED");
-    uploadPhotoToServer(console.log("done"));
+    // console.log("PUBLISHED");
+    uploadPostToServer(console.log("done"));
     navigation.navigate("FirstScreen", { photoCard });
     setPhotoCard(null);
     setStartCamera(null)
@@ -93,25 +100,29 @@ const CreateScreen = ({ navigation }) => {
 
        const reference = ref(storage, `images/${id}`);
        const result = await uploadBytesResumable(reference, blobFile);
-       console.log("RESULTTTTT", result.metadata)
-
+      //  console.log("RESULTTTTT", result.metadata)
+       const processedPhoto = await getDownloadURL(result.ref);
+      //  console.log('PROCESSEDPHOTO=>', processedPhoto)
+       setPhotoURL(processedPhoto)
      } catch (err) {
        // setLoading(false);
        console.log(err.message);
        Alert.alert("Try again \n", err.message);
      }
    };
-// const uploadPostToServer = async () => {
-//   await uploadPhotoToServer();
-//   const createPost = await addDoc(collection(db, "posts"), {
-//     photoURL,
-//     location,
-//     comment,
-//     locationName,
-//     userId,
-//     nickName,
-//   });
-// };
+const uploadPostToServer = async () => {
+  await uploadPhotoToServer();
+  const createPost = await addDoc(collection(db, "posts"), {
+    photoURL,
+    // setPhotoURL,
+    // processedPhoto,
+    location: location.coords,
+    message,
+    location,
+    userId,
+    name,
+  });
+};
 
   return (
     <View style={styles.container}>
@@ -159,6 +170,9 @@ const CreateScreen = ({ navigation }) => {
               </TouchableOpacity>
             </View>
           </Camera>
+          <View style={styles.inputContainer}>
+            <TextInput style={styles.input} onChangeText={setMessage}/>
+          </View>
         </>
       ) : (
         <View
@@ -204,7 +218,9 @@ const styles = StyleSheet.create({
   },
   camera: {
     flex: 1,
-    marginTop: 50,
+    marginTop: 20,
+    // marginHorizontal: 10,
+    marginBottom: 10,
 
     flexDirection: "row",
   },
@@ -213,8 +229,8 @@ const styles = StyleSheet.create({
     borderWidth: 4,
     borderRadius: 25,
     borderColor: "white",
-    marginLeft: 150,
-    marginTop: 550,
+    marginLeft: 135,
+    marginTop: 530,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -233,7 +249,7 @@ const styles = StyleSheet.create({
   publishBtn: {
     width: 50,
     marginTop: -43,
-    marginLeft: 280,
+    marginLeft: 250,
 
     borderColor: "white",
     alignItems: "center",
@@ -246,6 +262,16 @@ const styles = StyleSheet.create({
     borderColor: "white",
     borderWidth: 1,
     borderRadius: 10,
+  },
+  input: {
+    borderWidth: 1,
+    borderBottomColor: "#20b2aa",
+    borderColor: "transparent",
+    marginBottom: 10,
+    height: 40,
+  },
+  inputContainer: {
+    width: 335,
   },
 });
 

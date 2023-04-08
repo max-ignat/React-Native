@@ -78,7 +78,7 @@ const useRoute = (isLogin) => {
           headerShown: false,
         }}
       />
-      <MainTab.Screen
+      {/* <MainTab.Screen
         name="Contacts"
         component={ContactsScreen}
         options={{
@@ -88,7 +88,7 @@ const useRoute = (isLogin) => {
             headerShown: false,
           
         }}
-      />
+      /> */}
     </MainTab.Navigator>
   );
 };
