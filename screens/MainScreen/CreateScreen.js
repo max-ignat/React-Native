@@ -22,6 +22,7 @@ import {
 import { collection, addDoc } from "firebase/firestore";
 import { useSelector } from "react-redux";
 
+import * as ImageManipulator from 'expo-image-manipulator'
 
 const CreateScreen = ({ navigation }) => {
   const [photoCard, setPhotoCard] = useState(null);
@@ -71,57 +72,95 @@ const { userId, name } = useSelector((state) => state.auth);
       Alert.alert("Access denied!");
     }
   };
-  const takePhoto = async () => {
-    const location = await Location.getCurrentPositionAsync({});
-    setLocation(location);
-    const photo = await cameraRef.current.takePictureAsync();
-    setPhotoCard(photo.uri);
-    console.log("LOCATION ==>", location)
-    console.log("photo ==> ", photo.uri);
-    console.log("message ==>", message);
-    // console.log("latitude >", location.coords.latitude);
-    // console.log("altitude >", location.coords.altitude);
-  };
-  function publish() {
-    // console.log("PUBLISHED");
-    uploadPostToServer(console.log("done"));
-    navigation.navigate("FirstScreen", { photoCard });
+
+const resizeImage = async (uri, maxWidth, maxHeight) => {
+  const result = await ImageManipulator.manipulateAsync(
+    uri,
+    [
+      {
+        resize: {
+          width: maxWidth,
+          height: maxHeight,
+        },
+      },
+    ],
+    {
+      compress: 0.7, 
+      format: ImageManipulator.SaveFormat.JPEG,
+    }
+  );
+
+  return result.uri;
+};
+
+
+  // const takePhoto = async () => {
+  //   const location = await Location.getCurrentPositionAsync({});
+  //   setLocation(location);
+  //   const photo = await cameraRef.current.takePictureAsync();
+  //   setPhotoCard(photo.uri);
+  //   console.log("message ==>", message);
+  // };
+const takePhoto = async () => {
+  const location = await Location.getCurrentPositionAsync({});
+  setLocation(location);
+  const photo = await cameraRef.current.takePictureAsync();
+
+  // Изменение размера изображения перед установкой состояния photoCard
+  const resizedPhotoUri = await resizeImage(photo.uri, 800, 800);
+  setPhotoCard(resizedPhotoUri);
+  console.log("photo ==> ", photo.uri);
+  console.log("message ==>", message);
+};
+
+
+  function publish() {    
+    uploadPostToServer();
+    navigation.navigate("FirstScreen" );
     setPhotoCard(null);
     setStartCamera(null)
+    setMessage('')
+    
   }
    const uploadPhotoToServer = async () => {
-     if (!photoCard) return;
+     if (!photoURL) return;
 
      try {
-       // setLoading(true);
+       console.log('TRIED TO SEND PHOTO')
        const response = await fetch(photoCard);
        const blobFile = await response.blob();
        const id = Date.now();
 
        const reference = ref(storage, `images/${id}`);
        const result = await uploadBytesResumable(reference, blobFile);
-      //  console.log("RESULTTTTT", result.metadata)
        const processedPhoto = await getDownloadURL(result.ref);
-      //  console.log('PROCESSEDPHOTO=>', processedPhoto)
+       console.log("processedPhoto", processedPhoto);
        setPhotoURL(processedPhoto)
+       console.log("photoURL AFTER", photoURL);
+
+      //  setPhotoURL(null);
      } catch (err) {
-       // setLoading(false);
+
        console.log(err.message);
        Alert.alert("Try again \n", err.message);
      }
    };
 const uploadPostToServer = async () => {
   await uploadPhotoToServer();
+try {
   const createPost = await addDoc(collection(db, "posts"), {
     photoURL,
-    // setPhotoURL,
-    // processedPhoto,
     location: location.coords,
     message,
     location,
     userId,
     name,
   });
+} catch (error) {
+  console.log(error.message)
+}
+
+  
 };
 
   return (
@@ -171,7 +210,10 @@ const uploadPostToServer = async () => {
             </View>
           </Camera>
           <View style={styles.inputContainer}>
-            <TextInput style={styles.input} onChangeText={setMessage}/>
+            <TextInput
+              style={styles.input}
+              onChangeText={(text) => setMessage(text)}
+            />
           </View>
         </>
       ) : (
@@ -179,13 +221,14 @@ const uploadPostToServer = async () => {
           style={{
             flex: 1,
             backgroundColor: "azure",
-            justifyContent: "center",
+            justifyContent: "flex-end",
             alignItems: "center",
           }}
         >
           <TouchableOpacity
             onPress={_startCamera}
             style={{
+              // justifyContent: "flex-end",
               width: 130,
               borderRadius: 4,
               backgroundColor: "#14274e",
@@ -193,6 +236,7 @@ const uploadPostToServer = async () => {
               justifyContent: "center",
               alignItems: "center",
               height: 40,
+              marginBottom: 10,
             }}
           >
             <Text
